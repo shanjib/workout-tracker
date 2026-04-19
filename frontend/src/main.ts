@@ -3,7 +3,7 @@ import { Amplify } from 'aws-amplify'
 import amplifyConfig from './amplifyconfiguration'
 import './style.css'
 import App from './App.vue'
-import router from './router.js'
+import router from './router'
 
 Amplify.configure(amplifyConfig)
 
