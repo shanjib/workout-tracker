@@ -34,7 +34,11 @@ function submitConfirm() {
   });
   confirmSignUpOutputPromise
       .then((result) => {
-        router.push("/");
+        if (result.isSignUpComplete) {
+          router.push("/");
+        } else {
+          error.value = result.toString();
+        }
       })
       .catch((e) => {
         error.value = e;
