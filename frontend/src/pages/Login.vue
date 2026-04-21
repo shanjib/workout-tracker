@@ -2,7 +2,6 @@
   <NavigationBar
       title="Log In!"
       :showNothing=true
-      :showLoginButton=false
   />
   <div>
     <label>Email</label>

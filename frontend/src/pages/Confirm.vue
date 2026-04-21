@@ -2,7 +2,6 @@
   <NavigationBar
       title="Confirm Your Account"
       :showNothing=true
-      :showLoginButton=false
   />
   <div>
     <label>Confirmation Code</label>

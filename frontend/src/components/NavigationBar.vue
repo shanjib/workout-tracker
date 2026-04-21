@@ -12,7 +12,7 @@
     <div class="nav-right">
       <div v-if="showNothing"></div>
       <!-- Unauthenticated mode -->
-      <button v-else-if="props.showLoginButton" @click="goToLogin">Log In</button>
+      <button v-else-if="!isAuthenticated" @click="goToLogin">Log In</button>
 
       <!-- Authenticated mode -->
       <template v-else>
@@ -40,11 +40,13 @@
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { signOut } from "aws-amplify/auth";
 import router from "../router";
+import { getCurrentUser } from "aws-amplify/auth";
+
+const isAuthenticated = ref(false);
 
 const props = withDefaults(defineProps<{
   title: string;
   showNothing?: boolean;
-  showLoginButton: boolean;
   showProfileItem?: boolean;
 }>(), {
   showNothing: false,
@@ -101,7 +103,16 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-onMounted(() => document.addEventListener("click", handleClickOutside));
+onMounted(async () => {
+  document.addEventListener("click", handleClickOutside)
+
+  try {
+    await getCurrentUser();
+    isAuthenticated.value = true;
+  } catch {
+    isAuthenticated.value = false;
+  }
+});
 onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 </script>
 

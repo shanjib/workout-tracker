@@ -1,7 +1,6 @@
 <template>
   <NavigationBar
       title="Workout"
-      :showLoginButton=false
   />
   <div>
     Today is {{ formattedDate }}

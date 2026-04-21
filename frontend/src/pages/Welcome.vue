@@ -1,5 +1,7 @@
 <template>
-  <NavigationBar title="Welcome" :showLoginButton="true" />
+  <NavigationBar
+      title="Welcome"
+  />
 
   <div class="welcome-page">
     <section class="hero">

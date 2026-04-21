@@ -2,7 +2,6 @@
   <NavigationBar
       title="Sign Up!"
       :showNothing=true
-      :showLoginButton=false
   />
   <div>
     <label>Email</label>
