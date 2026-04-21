@@ -1,5 +1,8 @@
 <template>
-  <Header/>
+  <NavigationBar
+      title="Sign Up!"
+      :showNothing=true
+  />
   <div>
     <label>Email</label>
     <input
@@ -21,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import Header from "../components/Header.vue";
+import NavigationBar from "../components/NavigationBar.vue";
 import {ref} from "vue";
 import {signUp} from 'aws-amplify/auth'
 import {useRouter} from "vue-router";
