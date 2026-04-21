@@ -1,18 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { fetchAuthSession } from 'aws-amplify/auth'
-import Welcome from '../pages/Welcome.vue'
+import WorkoutHome from '../pages/WorkoutHome.vue'
 import LoginView from '../pages/Login.vue'
 import SignupView from '../pages/Signup.vue'
 import ConfirmView from '../pages/Confirm.vue'
+import Welcome from "../pages/Welcome.vue";
 
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        { path: '/', component: LoginView },
+        { path: '/', component: Welcome },
         { path: '/login', component: LoginView },
         { path: '/signup', component: SignupView },
         { path: '/confirm', component: ConfirmView },
-        { path: '/workouts', component: Welcome },
+        { path: '/workouts', component: WorkoutHome },
+        { path: '/profile', component: WorkoutHome },
     ]
 })
 

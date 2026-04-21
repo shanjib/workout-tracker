@@ -1,5 +1,9 @@
 <template>
-  <Header/>
+  <NavigationBar
+      title="Confirm Your Account"
+      :showNothing=true
+      :showLoginButton=false
+  />
   <div>
     <label>Confirmation Code</label>
     <input
@@ -15,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import Header from "../components/Header.vue";
+import NavigationBar from "../components/NavigationBar.vue";
 import {useRouter} from "vue-router";
 import {ref} from "vue";
 import {confirmSignUp} from 'aws-amplify/auth'
