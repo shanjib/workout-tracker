@@ -120,16 +120,36 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 .nav-bar {
   display: flex;
   align-items: center;
-  position: relative;
+  flex-wrap: wrap;
   padding: 0 16px;
-  margin: 12px;
+  margin-bottom: 24px;
+}
+
+.nav-right {
+  margin-left: auto;
+  position: relative;
+  order: 2; /* stays on row 1 with logo */
 }
 
 .nav-bar-text {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
+  order: 3;        /* pushes to row 2 */
+  width: 100%;
+  text-align: center;
+  margin: 4px 0 0 0;
+  position: static;
+  left: unset;
+  transform: none;
+}
+
+@media (min-width: 601px) {
+  .nav-bar-text {
+    order: 0;
+    width: auto;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .logo-wrap {
@@ -154,11 +174,6 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
   font-size: 10px;
   letter-spacing: 1px;
   text-transform: uppercase;
-}
-
-.nav-right {
-  margin-left: auto;
-  position: relative;
 }
 
 .hamburger {
