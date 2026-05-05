@@ -35,15 +35,19 @@ jobs:
           VITE_USER_POOL_ID: ${{ secrets.VITE_USER_POOL_ID }}
           VITE_USER_POOL_CLIENT_ID: ${{ secrets.VITE_USER_POOL_CLIENT_ID }}
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'corretto'
-
       - name: Install CDK dependencies
         working-directory: infrastructure
         run: npm ci
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Run backend tests
+        working-directory: backend
+        run: ./gradlew test
 
       - name: Install AWS CDK
         run: npm install -g aws-cdk
