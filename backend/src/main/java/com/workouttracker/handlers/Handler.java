@@ -1,4 +1,4 @@
-package com.workouttracker;
+package com.workouttracker.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
