@@ -45,6 +45,23 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
 
+      - name: Start PostgreSQL
+        run: |
+          docker run --name test-db \
+            -e POSTGRES_PASSWORD=password \
+            -e POSTGRES_DB=workoutdb \
+            -e POSTGRES_USER=postgres \
+            -p 5432:5432 \
+            -d postgres:16
+          # Wait for PostgreSQL to be ready
+          until docker exec test-db pg_isready -U postgres; do
+            sleep 1
+          done
+
+      - name: Generate jOOQ classes
+        working-directory: backend
+        run: ./gradlew flywayMigrate generateJooq
+
       - name: Run backend tests
         working-directory: backend
         run: ./gradlew test

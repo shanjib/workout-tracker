@@ -4,6 +4,8 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
 
 export class InfrastructureStack extends cdk.Stack {
@@ -11,7 +13,72 @@ export class InfrastructureStack extends cdk.Stack {
         super(scope, id, props);
 
         // -------------------------------------------------------
-        // Cognito User Pool
+        // VPC
+        // -------------------------------------------------------
+        const vpc = new ec2.Vpc(this, 'AppVpc', {
+            maxAzs: 2,
+            natGateways: 0,
+            subnetConfiguration: [
+                {
+                    name: 'Public',
+                    subnetType: ec2.SubnetType.PUBLIC,
+                    cidrMask: 24,
+                },
+                {
+                    name: 'Private',
+                    subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+                    cidrMask: 24,
+                },
+            ],
+        });
+
+        // -------------------------------------------------------
+        // Security Groups
+        // -------------------------------------------------------
+        const lambdaSecurityGroup = new ec2.SecurityGroup(this, 'LambdaSecurityGroup', {
+            vpc,
+            description: 'Security group for Lambda functions',
+            allowAllOutbound: true,
+        });
+
+        const rdsSecurityGroup = new ec2.SecurityGroup(this, 'RdsSecurityGroup', {
+            vpc,
+            description: 'Security group for RDS instance',
+            allowAllOutbound: false,
+        });
+
+        rdsSecurityGroup.addIngressRule(
+            lambdaSecurityGroup,
+            ec2.Port.tcp(5432),
+            'Allow Lambda to connect to RDS'
+        );
+
+        // -------------------------------------------------------
+        // RDS
+        // -------------------------------------------------------
+        const database = new rds.DatabaseInstance(this, 'Database', {
+            engine: rds.DatabaseInstanceEngine.postgres({
+                version: rds.PostgresEngineVersion.VER_16,
+            }),
+            instanceType: ec2.InstanceType.of(
+                ec2.InstanceClass.T4G,
+                ec2.InstanceSize.MICRO
+            ),
+            vpc,
+            vpcSubnets: {
+                subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+            },
+            securityGroups: [rdsSecurityGroup],
+            databaseName: 'workoutdb',
+            credentials: rds.Credentials.fromGeneratedSecret('postgres'),
+            multiAz: false,
+            storageEncrypted: true,
+            deletionProtection: false,
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+        });
+
+        // -------------------------------------------------------
+        // Cognito (unchanged from Phase 3)
         // -------------------------------------------------------
         const userPool = new cognito.UserPool(this, 'UserPool', {
             selfSignUpEnabled: true,
@@ -28,7 +95,6 @@ export class InfrastructureStack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
-        // App Client — used by your Vue app to talk to Cognito
         const userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
             userPool,
             authFlows: {
@@ -90,6 +156,11 @@ export class InfrastructureStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'UserPoolClientId', {
             value: userPoolClient.userPoolClientId,
             description: 'Cognito User Pool Client ID',
+        });
+
+        new cdk.CfnOutput(this, 'DatabaseSecretArn', {
+            value: database.secret!.secretArn,
+            description: 'RDS credentials secret ARN',
         });
     }
 }
