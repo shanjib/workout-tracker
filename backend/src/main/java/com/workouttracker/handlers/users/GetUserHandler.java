@@ -4,16 +4,21 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workouttracker.database.DatabaseConnectionFactory;
 import com.workouttracker.database.DatabaseConnectionProvider;
 import com.workouttracker.generated.tables.Users;
-import org.jooq.exception.NoDataFoundException;
+import com.workouttracker.util.MapperUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GetUserHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    private static final DatabaseConnectionProvider db = DatabaseConnectionFactory.create();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(GetUserHandler.class);
+    private final DatabaseConnectionProvider db;
+
+    public GetUserHandler() {
+        this.db = DatabaseConnectionFactory.create();
+    }
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -33,9 +38,10 @@ public class GetUserHandler implements RequestHandler<APIGatewayProxyRequestEven
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
-                    .withBody(objectMapper.writeValueAsString(user.intoMap()));
+                    .withBody(MapperUtil.getObjectMapper().writeValueAsString(user.intoMap()));
 
         } catch (Exception e) {
+            logger.warn("Exception encountered: {}", e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
                     .withBody("{\"error\": \"Internal server error\"}");

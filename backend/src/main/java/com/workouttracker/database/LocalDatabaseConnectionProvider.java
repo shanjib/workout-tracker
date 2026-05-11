@@ -10,36 +10,32 @@ import java.sql.DriverManager;
 
 public class LocalDatabaseConnectionProvider implements DatabaseConnectionProvider {
 
-    private final DSLContext dslContext;
+    private final String url;
+    private final String user;
+    private final String password;
 
     public LocalDatabaseConnectionProvider() {
-        this.dslContext = createContext();
+        this.url = System.getProperty("TEST_DB_URL", "jdbc:postgresql://localhost:5432/workoutdb");
+        this.user = System.getProperty("TEST_DB_USER", "postgres");
+        this.password = System.getProperty("TEST_DB_PASSWORD", "password");
+        runMigrations();
     }
 
+    private void runMigrations() {
+        Flyway.configure()
+                .dataSource(url, user, password)
+                .locations("classpath:db/migration")
+                .load()
+                .migrate();
+    }
+
+    @Override
     public DSLContext getContext() {
-        return dslContext;
-    }
-
-    private static DSLContext createContext() {
         try {
-            // Running locally — use local Docker PostgreSQL
-            String jdbcUrl = "jdbc:postgresql://localhost:5432/workoutdb";
-            String username = "postgres";
-            String password = "password";
-
-            // Run Flyway migrations
-            Flyway.configure()
-                    .dataSource(jdbcUrl, username, password)
-                    .locations("classpath:db/migration")
-                    .load()
-                    .migrate();
-
-            // Create and return jOOQ context
-            Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+            Connection connection = DriverManager.getConnection(url, user, password);
             return DSL.using(connection, SQLDialect.POSTGRES);
-
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize database connection", e);
+            throw new RuntimeException("Failed to create database connection", e);
         }
     }
 }

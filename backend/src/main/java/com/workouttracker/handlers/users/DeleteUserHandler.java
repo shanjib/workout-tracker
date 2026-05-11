@@ -7,12 +7,19 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.workouttracker.database.DatabaseConnectionFactory;
 import com.workouttracker.database.DatabaseConnectionProvider;
 import com.workouttracker.generated.tables.Users;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
 public class DeleteUserHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    private static final DatabaseConnectionProvider db = DatabaseConnectionFactory.create();
+    private static final Logger logger = LoggerFactory.getLogger(DeleteUserHandler.class);
+    private final DatabaseConnectionProvider db;
+
+    public DeleteUserHandler() {
+        this.db = DatabaseConnectionFactory.create();
+    }
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -35,6 +42,7 @@ public class DeleteUserHandler implements RequestHandler<APIGatewayProxyRequestE
                     .withBody(null);
 
         } catch (Exception e) {
+            logger.warn("Exception encountered: {}", e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
                     .withBody("{\"error\": \"Internal server error\"}");

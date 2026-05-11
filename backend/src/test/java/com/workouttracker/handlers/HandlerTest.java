@@ -1,6 +1,5 @@
-package com.workouttracker;
+package com.workouttracker.handlers;
 
-import com.workouttracker.handlers.Handler;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;

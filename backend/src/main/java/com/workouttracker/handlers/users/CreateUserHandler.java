@@ -4,18 +4,24 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workouttracker.database.DatabaseConnectionFactory;
 import com.workouttracker.database.DatabaseConnectionProvider;
 import com.workouttracker.generated.tables.Users;
+import com.workouttracker.util.MapperUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.Map;
 
 public class CreateUserHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    private static final DatabaseConnectionProvider db = DatabaseConnectionFactory.create();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final Logger logger = LoggerFactory.getLogger(CreateUserHandler.class);
+    private final DatabaseConnectionProvider db;
+
+    public CreateUserHandler() {
+        this.db = DatabaseConnectionFactory.create();
+    }
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -26,7 +32,7 @@ public class CreateUserHandler implements RequestHandler<APIGatewayProxyRequestE
                     .get("claims");
             String cognitoSub = claims.get("sub");
 
-            Map<String, Object> body = objectMapper.readValue(input.getBody(), Map.class);
+            Map<String, Object> body = MapperUtil.getObjectMapper().readValue(input.getBody(), Map.class);
 
             var record = db.getContext().newRecord(Users.USERS);
             record.setCognitoSub(cognitoSub);
@@ -42,12 +48,13 @@ public class CreateUserHandler implements RequestHandler<APIGatewayProxyRequestE
 
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(201)
-                    .withBody(objectMapper.writeValueAsString(record.intoMap()));
+                    .withBody(MapperUtil.getObjectMapper().writeValueAsString(record.intoMap()));
 
         } catch (Exception e) {
+            logger.warn("Exception encountered: {}", e.getMessage());
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(500)
-                    .withBody("{\"error\": \"Internal server error\"}");
+                    .withBody("{\"error\": \"" + e.getMessage() + "\"}");
         }
     }
 }
